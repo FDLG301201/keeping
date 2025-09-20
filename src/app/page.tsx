@@ -1,10 +1,12 @@
 "use client"
 
+import NextImage from "next/image"
 import React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Star, Plus, Search, LogOut, User, Filter, Eye, Clock, Pause, X, Play, ChevronDown } from "lucide-react"
 import { AddEntryForm } from "@/components/forms/add-entry-form"
 import { createClient } from "@/lib/supabase/client"
+import { UserProfile } from "@/lib/types"
 import { useRouter } from "next/navigation"
 
 interface EntryType {
@@ -81,7 +83,7 @@ export default function EntertainmentDirectory() {
   const [selectedType, setSelectedType] = useState<string>("")
   const [selectedGenre, setSelectedGenre] = useState<string>("")
   const [selectedStatus, setSelectedStatus] = useState<string>("")
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<UserProfile>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<EntryType | null>(null)
   const [showFilters, setShowFilters] = useState(false)
@@ -89,6 +91,38 @@ export default function EntertainmentDirectory() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+
+  //LOAD ENTRIES V2
+  const loadEntries = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("entries")
+        .select(`
+          *,
+          entry_genres(genre_id, genres(name)),
+          entry_relations!entry_relations_parent_entry_id_fkey(
+            related_entry_id,
+            related_entry:entries!entry_relations_related_entry_id_fkey(title)
+          )
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedEntries = data?.map((entry) => ({
+        ...entry,
+        genres: entry.entry_genres?.map((eg: { genre_id: string; genres: { name: string } }) => eg.genres.name) || [],
+        related_entries: entry.entry_relations?.map((er: { related_entry_id: string; related_entry: { title: string } }) => er.related_entry.title) || [],
+      })) || [];
+
+      setEntries(formattedEntries);
+    } catch (error) {
+      console.error("Error loading entries:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -103,70 +137,7 @@ export default function EntertainmentDirectory() {
       await loadEntries(session.user.id)
     }
     checkAuth()
-  }, [])
-
-  //LOAD ENTRIES V1
-  // const loadEntries = async (userId: string) => {
-  //   try {
-  //     const { data, error } = await supabase
-  //       .from("entries")
-  //       .select(`
-  //         *,
-  //         entry_genres(genre_id, genres(name)),
-  //         entry_relations!entry_relations_entry_id_fkey(related_entry_title)
-  //       `)
-  //       .eq("user_id", userId)
-  //       .order("created_at", { ascending: false })
-
-  //     if (error) throw error
-
-  //     const formattedEntries =
-  //       data?.map((entry) => ({
-  //         ...entry,
-  //         genres: entry.entry_genres?.map((eg: any) => eg.genres.name) || [],
-  //         related_entries: entry.entry_relations?.map((er: any) => er.related_entry_title) || [],
-  //       })) || []
-
-  //     setEntries(formattedEntries)
-  //   } catch (error) {
-  //     console.error("Error loading entries:", error)
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
-  //LOAD ENTRIES V2
-  const loadEntries = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("entries")
-        .select(`
-          *,
-          entry_genres(genre_id, genres(name)),
-          entry_relations!entry_relations_parent_entry_id_fkey(
-            related_entry_id,
-            related_entry:entries!entry_relations_related_entry_id_fkey(title)
-          )
-        `)
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-  
-      if (error) throw error;
-  
-      const formattedEntries =
-        data?.map((entry: any) => ({
-          ...entry,
-          genres: entry.entry_genres?.map((eg: any) => eg.genres.name) || [],
-          related_entries: entry.entry_relations?.map((er: any) => er.related_entry.title) || [],
-        })) || [];
-  
-      setEntries(formattedEntries);
-    } catch (error) {
-      console.error("Error loading entries:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [router, supabase.auth, loadEntries])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -187,12 +158,14 @@ export default function EntertainmentDirectory() {
   if (showAddForm) {
     return (
       <AddEntryForm
-        onSave={async (newEntry) => {
-          await loadEntries(user.id)
-          setShowAddForm(false)
+        onSave={async () => {
+          if (user) {
+            await loadEntries(user.id)
+            setShowAddForm(false)
+          }
         }}
         onCancel={() => setShowAddForm(false)}
-        userId={user?.id}
+        userId={user?.id || ""}
       />
     )
   }
@@ -211,9 +184,11 @@ export default function EntertainmentDirectory() {
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg overflow-hidden">
             <div className="md:flex">
               <div className="md:w-1/3">
-                <img
+                <NextImage
                   src={selectedEntry.image_url || "/placeholder.svg"}
                   alt={selectedEntry.title}
+                  width={400}
+                  height={256}
                   className="w-full h-64 md:h-full object-cover"
                 />
               </div>
@@ -254,7 +229,7 @@ export default function EntertainmentDirectory() {
                   <div className="mb-4">
                     <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Géneros</h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedEntry.genres.map((genre, index) => (
+                      {selectedEntry.genres.map((genre: string, index: number) => (
                         <span
                           key={index}
                           className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm rounded-md"
@@ -292,7 +267,7 @@ export default function EntertainmentDirectory() {
                       Entradas Relacionadas
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      {selectedEntry.related_entries.map((entry, index) => (
+                      {selectedEntry.related_entries.map((entry: string, index: number) => (
                         <span
                           key={index}
                           className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-md"
@@ -533,9 +508,11 @@ export default function EntertainmentDirectory() {
             >
               <div className="p-0">
                 <div className="relative">
-                  <img
+                  <NextImage
                     src={entry.image_url || "/placeholder.svg"}
                     alt={entry.title}
+                    width={300}
+                    height={192}
                     className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
 

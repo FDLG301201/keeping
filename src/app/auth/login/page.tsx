@@ -38,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-[10rem]">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pt-[5rem]">
           {/* Left side - Welcome content */}
           <div className="w-full md:w-1/2 lg:w-2/5 space-y-8 text-center md:text-left">
             <div className="inline-flex items-center space-x-3">

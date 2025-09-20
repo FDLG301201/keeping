@@ -1,12 +1,13 @@
 "use client"
 
+import NextImage from "next/image"
 import type React from "react"
 import { useState } from "react"
 import { Star, X, ArrowLeft, Calendar, ChevronDown, Plus } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 interface AddEntryFormProps {
-    onSave: (newEntry?: any) => void  // ← Solución: acepta parámetro opcional
+    onSave: (newEntry?: unknown) => void
     onCancel: () => void
     userId: string
 }
@@ -58,7 +59,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
             const fileExt = file.name.split(".").pop()
             const fileName = `${userId}/${Date.now()}.${fileExt}`
 
-            const { data, error } = await supabase.storage.from("entry-images").upload(fileName, file)
+            const { error } = await supabase.storage.from("entry-images").upload(fileName, file)
 
             if (error) throw error
 
@@ -478,7 +479,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {formData.genres.map((genre, index) => (
+                                    {formData.genres.map((genre: string, index: number) => (
                                         <span
                                             key={index}
                                             className="inline-flex items-center gap-1 px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm rounded-md"
@@ -520,7 +521,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {formData.relatedEntries.map((entry, index) => (
+                                    {formData.relatedEntries.map((entry: string, index: number) => (
                                         <span
                                             key={index}
                                             className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-md"
@@ -572,9 +573,11 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                     </div>
                                     {imagePreview && (
                                         <div className="relative w-32 h-48 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-                                            <img
+                                            <NextImage
                                                 src={imagePreview || "/placeholder.svg"}
                                                 alt="Preview"
+                                                width={128}
+                                                height={192}
                                                 className="w-full h-full object-cover"
                                             />
                                             <button
