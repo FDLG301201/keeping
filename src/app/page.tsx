@@ -19,9 +19,9 @@ interface EntryType {
   date_watched: string
   description: string
   status: string
-  total_seasons: number
+  seasons: number
   current_season: number
-  total_episodes: number
+  episodes: number
   current_episode: number
   genres: string[]
   related_entries: string[]
@@ -113,7 +113,7 @@ export default function EntertainmentDirectory() {
       const formattedEntries = data?.map((entry) => ({
         ...entry,
         genres: entry.entry_genres?.map((eg: { genre_id: string; genres: { name: string } }) => eg.genres.name) || [],
-        related_entries: entry.entry_relations?.map((er: { related_entry_id: string; related_entry: { title: string } }) => er.related_entry.title) || [],
+        related_entries: entry.entry_relations?.map((er: { related_entry_id: string; related_entry: { title: string } | null }) => er.related_entry?.title).filter(Boolean) || [],
       })) || [];
 
       setEntries(formattedEntries);
@@ -241,20 +241,21 @@ export default function EntertainmentDirectory() {
                   </div>
                 )}
 
-                {(selectedEntry.type === "Serie" || selectedEntry.type === "Anime") && (
+                {(selectedEntry.type === "series" || selectedEntry.type === "anime") &&
+                  (selectedEntry.status === "in_progress" || selectedEntry.status === "paused" || selectedEntry.status === "dropped") && (
                   <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                     <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Progreso</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-slate-600 dark:text-slate-400">Temporadas:</span>
+                        <span className="text-slate-600 dark:text-slate-400">Temporada:</span>
                         <span className="ml-2 font-medium text-slate-900 dark:text-white">
-                          {selectedEntry.current_season}/{selectedEntry.total_seasons}
+                          {selectedEntry.current_season} de {selectedEntry.seasons}
                         </span>
                       </div>
                       <div>
-                        <span className="text-slate-600 dark:text-slate-400">Episodios:</span>
+                        <span className="text-slate-600 dark:text-slate-400">Episodio:</span>
                         <span className="ml-2 font-medium text-slate-900 dark:text-white">
-                          {selectedEntry.current_episode}/{selectedEntry.total_episodes}
+                          {selectedEntry.current_episode} de {selectedEntry.episodes}
                         </span>
                       </div>
                     </div>
@@ -516,7 +517,7 @@ export default function EntertainmentDirectory() {
                     className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
 
-                  {entry.status === "Completado" && (
+                  {entry.status === "completed" && (
                     <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
                       <Eye className="w-3 h-3 text-white" />
                     </div>
@@ -537,9 +538,10 @@ export default function EntertainmentDirectory() {
 
                     <div className="flex items-center justify-between text-xs text-white/80 mb-1">
                       <span>{new Date(entry.date_watched).getFullYear()}</span>
-                      {(entry.type === "Serie" || entry.type === "Anime") && (
+                      {(entry.type === "series" || entry.type === "anime") &&
+                        (entry.status === "in_progress" || entry.status === "paused") && (
                         <span>
-                          T{entry.current_season}/{entry.total_seasons}
+                          T{entry.current_season}/{entry.seasons}
                         </span>
                       )}
                     </div>
@@ -560,7 +562,7 @@ export default function EntertainmentDirectory() {
                     <div className="text-center">
                       <h4 className="text-white font-semibold mb-2">{entry.title}</h4>
                       <p className="text-white/90 text-sm line-clamp-4">{entry.description}</p>
-                      {entry.status !== "Completado" && (
+                      {entry.status !== "completed" && (
                         <div className="mt-2 flex items-center justify-center gap-1">
                           {React.createElement(statusConfig[entry.status as keyof typeof statusConfig].icon, {
                             className: "w-3 h-3 text-white",

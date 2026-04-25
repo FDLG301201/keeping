@@ -169,9 +169,18 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
 
             // Insert related entries
             for (const relatedTitle of formData.relatedEntries) {
+                const { data: relatedEntry } = await supabase
+                    .from("entries")
+                    .select("id")
+                    .eq("title", relatedTitle)
+                    .eq("user_id", userId)
+                    .maybeSingle()
+
+                if (!relatedEntry) continue
+
                 const { error: relationError } = await supabase.from("entry_relations").insert({
-                    entry_id: entryData.id,
-                    related_entry_title: relatedTitle,
+                    parent_entry_id: entryData.id,
+                    related_entry_id: relatedEntry.id,
                 })
 
                 if (relationError) throw relationError
@@ -404,7 +413,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                             </div>
 
                             {/* Continuation Info Section */}
-                            {(formData.type === "Serie" || formData.type === "Anime") && (
+                            {(formData.type === "series" || formData.type === "anime") && (formData.status === "in_progress" || formData.status === "paused" || formData.status === "dropped") && (
                                 <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
                                     <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                         Información de Continuación
@@ -495,6 +504,9 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                             {/* Genres Section */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Géneros</label>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                    Escribe un género y presiona <kbd className="px-1 py-0.5 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-500 rounded text-xs font-mono">Enter</kbd> o el botón <span className="font-medium">+</span> para agregarlo. Puedes añadir varios.
+                                </p>
                                 <div className="flex gap-2 mb-2">
                                     <input
                                         type="text"
