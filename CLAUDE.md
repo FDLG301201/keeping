@@ -5,12 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev       # Start dev server with Turbopack
-npm run build     # Production build with Turbopack
-npm run start     # Start production server
-npm run lint      # Run ESLint
+pnpm dev       # Start dev server (Turbopack, default in Next.js 16)
+pnpm build     # Production build (Turbopack)
+pnpm start     # Start production server
+pnpm lint      # Run ESLint
 ```
 
+Package manager: **pnpm**. Do not use npm or yarn.  
 No test suite is configured.
 
 ## What This App Does
@@ -22,7 +23,8 @@ The UI is in Spanish.
 ## Architecture
 
 ### Stack
-- **Next.js 15** with App Router (`src/app/`)
+- **Next.js 16** with App Router (`src/app/`); Turbopack is the default bundler
+- **React 19.2**
 - **Supabase** for auth, database (PostgreSQL), and file storage
 - **TypeScript** with strict mode; path alias `@/*` → `src/*`
 - **Tailwind CSS 4** via PostCSS; `cn()` utility in `src/lib/utils.ts`
@@ -31,7 +33,7 @@ The UI is in Spanish.
 - **SWR** available but data fetching is currently done via direct Supabase client calls in `useEffect`
 
 ### Auth & Routing
-`middleware.ts` protects all routes by validating the Supabase session cookie and redirecting unauthenticated users to `/auth/login`. The Supabase SSR helpers (`@supabase/ssr`) maintain session state across server and client via cookies.
+`proxy.ts` (Next.js 16 renamed from `middleware.ts`) protects all routes by validating the Supabase session cookie and redirecting unauthenticated users to `/auth/login`. The exported function is named `proxy`. The Supabase SSR helpers (`@supabase/ssr`) maintain session state across server and client via cookies.
 
 - Browser client: `src/lib/supabase/client.ts` — `createBrowserClient()`
 - Server client: `src/lib/supabase/server.ts` — `createServerClient()` with Next.js cookie store
@@ -74,7 +76,7 @@ Cover images are uploaded to a Supabase storage bucket named `entry-images` usin
 | `src/app/page.tsx` | Main dashboard — entry list, filters (search/type/genre/status), modal trigger, all Supabase queries |
 | `src/app/layout.tsx` | Root layout — fonts, metadata, `suppressHydrationWarning` on body |
 | `src/components/forms/add-entry-form.tsx` | Add/edit entry form — image upload, genre tagging, related-entry linking |
-| `middleware.ts` | Session validation and route protection |
+| `proxy.ts` | Route protection and Supabase session validation (Next.js 16 proxy, formerly middleware.ts) |
 | `src/lib/types.ts` | `EntryType`, `EntryStatus`, `UserProfile` TypeScript types |
 | `docs/supabase-schema.md` | Full DB schema, RLS policies, FK names, and reference queries |
 
