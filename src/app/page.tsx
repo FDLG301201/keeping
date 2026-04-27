@@ -192,34 +192,34 @@ export default function EntertainmentDirectory() {
                   className="w-full h-64 md:h-full object-cover"
                 />
               </div>
-              <div className="md:w-2/3 p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{selectedEntry.title}</h1>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className={`${typeColors[selectedEntry.type as keyof typeof typeColors]} text-white text-sm px-2 py-1 rounded-full font-medium`}
-                      >
-                        {typeLabels[selectedEntry.type]}
-                      </span>
-                      <span
-                        className={`${statusConfig[selectedEntry.status as keyof typeof statusConfig].color} text-white text-sm px-2 py-1 rounded-full font-medium flex items-center gap-1`}
-                      >
-                        {React.createElement(statusConfig[selectedEntry.status as keyof typeof statusConfig].icon, {
-                          className: "w-3 h-3",
-                        })}
-                        {statusLabels[selectedEntry.status]}
-                      </span>
+              <div className="md:w-2/3 p-4 sm:p-6">
+                <div className="flex flex-col gap-3 mb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{selectedEntry.title}</h1>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 sm:w-5 sm:h-5 ${i < selectedEntry.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+                        />
+                      ))}
+                      <span className="ml-1 text-sm text-slate-600 dark:text-slate-400">{selectedEntry.rating}/5</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-5 h-5 ${i < selectedEntry.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
-                      />
-                    ))}
-                    <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">{selectedEntry.rating}/5</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`${typeColors[selectedEntry.type as keyof typeof typeColors]} text-white text-xs sm:text-sm px-2 py-1 rounded-full font-medium`}
+                    >
+                      {typeLabels[selectedEntry.type]}
+                    </span>
+                    <span
+                      className={`${statusConfig[selectedEntry.status as keyof typeof statusConfig].color} text-white text-xs sm:text-sm px-2 py-1 rounded-full font-medium flex items-center gap-1`}
+                    >
+                      {React.createElement(statusConfig[selectedEntry.status as keyof typeof statusConfig].icon, {
+                        className: "w-3 h-3",
+                      })}
+                      {statusLabels[selectedEntry.status]}
+                    </span>
                   </div>
                 </div>
 
@@ -318,33 +318,33 @@ export default function EntertainmentDirectory() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">K</span>
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-base sm:text-lg">K</span>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Keeping</h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">Keeping</h1>
+                <p className="hidden sm:block text-sm text-slate-600 dark:text-slate-400">
                   Registra y califica todo tu contenido favorito
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                 <User className="w-4 h-4" />
-                <span>{user?.email}</span>
+                <span className="max-w-[160px] truncate">{user?.email}</span>
               </div>
               <button
-                className="inline-flex items-center justify-center px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+                className="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
                 onClick={() => setShowAddForm(true)}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Agregar Entrada
+                <Plus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Agregar Entrada</span>
               </button>
               <button
-                className="inline-flex items-center justify-center px-4 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-sm font-medium rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+                className="inline-flex items-center justify-center p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
                 onClick={handleLogout}
               >
                 <LogOut className="w-4 h-4" />

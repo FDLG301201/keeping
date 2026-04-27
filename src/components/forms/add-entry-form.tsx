@@ -203,7 +203,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                         key={i}
                         type="button"
                         onClick={() => setFormData({ ...formData, rating: i + 1 })}
-                        className="transition-colors hover:scale-110"
+                        className="p-1 transition-colors hover:scale-110 touch-manipulation"
                     >
                         <Star
                             className={`w-6 h-6 ${i < formData.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300 hover:text-yellow-300"
@@ -269,28 +269,28 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
             <div className="container mx-auto max-w-4xl">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-3 mb-6">
                     <button
                         onClick={onCancel}
-                        className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 dark:border-slate-600 bg-transparent text-slate-700 dark:text-slate-300 text-sm font-medium rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+                        className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 border border-slate-300 dark:border-slate-600 bg-transparent text-slate-700 dark:text-slate-300 text-sm font-medium rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 shrink-0"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Volver
                     </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Agregar Nueva Entrada</h1>
-                        <p className="text-slate-600 dark:text-slate-400">Registra tu nueva experiencia de entretenimiento</p>
+                    <div className="min-w-0">
+                        <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white leading-tight">Agregar Nueva Entrada</h1>
+                        <p className="hidden sm:block text-slate-600 dark:text-slate-400 text-sm">Registra tu nueva experiencia de entretenimiento</p>
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg">
-                    <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-                        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Información de la Entrada</h2>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    <div className="px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                        <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Información de la Entrada</h2>
+                        <p className="hidden sm:block text-sm text-slate-600 dark:text-slate-400 mt-1">
                             Completa los detalles de tu película, serie, anime o juego
                         </p>
                     </div>
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Title and Type Row */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -418,10 +418,10 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                     <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
                                         Información de Continuación
                                     </h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-2">
                                             <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                                                Temporadas Totales
+                                                Temporadas totales
                                             </label>
                                             <input
                                                 type="number"
@@ -440,7 +440,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Temporada Actual</label>
+                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Temporada actual</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -460,7 +460,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                                                Episodios Totales
+                                                Episodios totales
                                             </label>
                                             <input
                                                 type="number"
@@ -479,7 +479,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Episodio Actual</label>
+                                            <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Episodio actual</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -534,7 +534,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => removeGenre(genre)}
-                                                className="text-violet-500 hover:text-violet-700 dark:hover:text-violet-200"
+                                                className="p-0.5 text-violet-500 hover:text-violet-700 dark:hover:text-violet-200 touch-manipulation"
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>
@@ -576,7 +576,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
                                             <button
                                                 type="button"
                                                 onClick={() => removeRelatedEntry(entry)}
-                                                className="text-blue-500 hover:text-blue-700 dark:hover:text-blue-200"
+                                                className="p-0.5 text-blue-500 hover:text-blue-700 dark:hover:text-blue-200 touch-manipulation"
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>
