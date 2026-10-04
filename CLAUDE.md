@@ -28,12 +28,21 @@ The UI is in Spanish.
 - **Supabase** for auth, database (PostgreSQL), and file storage
 - **TypeScript** with strict mode; path alias `@/*` → `src/*`
 - **Tailwind CSS 4** via PostCSS; `cn()` utility in `src/lib/utils.ts`
-- **Radix UI** primitives wrapped as shadcn-style components in `src/components/ui/`
+- **Radix UI** primitives wrapped as shadcn-style components in `src/components/ui/` — only a handful exist (badge, label, select, tabs, textarea) even though many `@radix-ui/*` packages are installed; add a wrapper there before using a new primitive
 - **React Hook Form + Zod** for form validation
 - **SWR** available but data fetching is currently done via direct Supabase client calls in `useEffect`
 
 ### Auth & Routing
-`proxy.ts` (Next.js 16 renamed from `middleware.ts`) protects all routes by validating the Supabase session cookie and redirecting unauthenticated users to `/auth/login`. The exported function is named `proxy`. The Supabase SSR helpers (`@supabase/ssr`) maintain session state across server and client via cookies.
+`proxy.ts` (Next.js 16 renamed from `middleware.ts`) validates the Supabase session via `getUser()` and redirects unauthenticated users to `/auth/login`. The exported function is named `proxy`. **Exemptions:** `/auth/*` and `/` itself are not redirected by the proxy — the dashboard at `/` does its own client-side check (`getSession()` → `router.push("/auth/login")`). The Supabase SSR helpers (`@supabase/ssr`) maintain session state across server and client via cookies.
+
+Auth pages live in `src/app/auth/` (login, signup, signup-success, forgot-password, reset-password). Email links (signup confirmation, password recovery) redirect to `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` when set, otherwise `window.location.origin`. `reset-password` handles both the PKCE flow (`?code=` → `exchangeCodeForSession`) and the implicit-flow fallback (`PASSWORD_RECOVERY` auth event).
+
+### Auth Email Templates
+Custom Supabase auth emails (Spanish) are in `src/emails/confirmation.html` and `src/emails/recovery.html`. They are **not** picked up automatically — push them to the Supabase project via the Management API:
+```bash
+SUPABASE_ACCESS_TOKEN=<token> node scripts/apply-email-templates.mjs
+```
+The script also sets the email subjects; the project ref is hardcoded in it.
 
 - Browser client: `src/lib/supabase/client.ts` — `createBrowserClient()`
 - Server client: `src/lib/supabase/server.ts` — `createServerClient()` with Next.js cookie store
@@ -62,7 +71,18 @@ entry_relations!entry_relations_parent_entry_id_fkey(
 ```
 
 ### File Uploads
-Cover images are uploaded to a Supabase storage bucket named `entry-images` using the path `{userId}/{timestamp}.{ext}`. The public URL is stored in `entries.image_url`.
+Cover images are uploaded to a Supabase storage bucket named `entry-images` using the path `{userId}/{timestamp}.{ext}`. The public URL is stored in `entries.image_url`. `next.config.ts` allowlists the Supabase project hostname in `images.remotePatterns` for `next/image` — update it if the Supabase project changes.
+
+### Quick Add ("Agregado exprés") — anime only
+A second add flow (`src/components/quick-add/`) that identifies an anime and saves it after a one-card confirmation (rating, status, current season/episode). **Only `type = anime` is supported**; every other type still uses the manual form. Identification has three inputs: typed title, photo of the title (OCR via `tesseract.js`, lazy-loaded), and scene screenshot (trace.moe, anonymous quota ~100/month).
+
+Data comes from `src/lib/services/anime/` behind a common `AnimeProvider` interface, queried as a cascade: AniList first, Jikan (MyAnimeList) only if AniList returns nothing or fails. All calls go straight from the browser with an 8 s timeout.
+
+Data rules that are easy to break:
+- **One entry per franchise.** AniList treats each season as its own media; `resolveSeasonChain` walks PREQUEL links back to the first season, then SEQUEL forward, counting only `TV`/`TV_SHORT` and skipping unreleased seasons (unless picked). Movies/OVAs/specials never count as seasons. Jikan results are always 1 season.
+- **`episodes` is per season** (episodes of `current_season`), not the franchise total.
+- Title/cover/synopsis come from the first season. Synopsis is English; genres are translated via the dictionary in `genres.ts` (unknown ones kept as-is).
+- Duplicates are detected by case-insensitive title match among the user's anime entries (no external ID column).
 
 ### UI Conventions
 
@@ -77,6 +97,7 @@ Cover images are uploaded to a Supabase storage bucket named `entry-images` usin
 | `src/app/layout.tsx` | Root layout — fonts, metadata, `suppressHydrationWarning` on body |
 | `src/components/forms/add-entry-form.tsx` | Add/edit entry form — image upload, genre tagging, related-entry linking |
 | `proxy.ts` | Route protection and Supabase session validation (Next.js 16 proxy, formerly middleware.ts) |
+| `scripts/apply-email-templates.mjs` | Pushes `src/emails/*.html` auth email templates to Supabase |
 | `src/lib/types.ts` | `EntryType`, `EntryStatus`, `UserProfile` TypeScript types |
 | `docs/supabase-schema.md` | Full DB schema, RLS policies, FK names, and reference queries |
 

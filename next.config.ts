@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      // Agregado exprés covers (AniList, and MyAnimeList via Jikan)
+      { protocol: 'https', hostname: 's4.anilist.co', pathname: '/file/**' },
+      { protocol: 'https', hostname: 'cdn.myanimelist.net', pathname: '/images/**' },
     ],
   },
 };

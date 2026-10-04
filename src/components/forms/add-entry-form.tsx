@@ -5,17 +5,19 @@ import type React from "react"
 import { useState } from "react"
 import { Star, X, ArrowLeft, Calendar, ChevronDown, Plus } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { linkGenres } from "@/lib/services/entries"
 
 interface AddEntryFormProps {
     onSave: (newEntry?: unknown) => void
     onCancel: () => void
     userId: string
+    initialTitle?: string
 }
 
-export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
+export function AddEntryForm({ onSave, onCancel, userId, initialTitle }: AddEntryFormProps) {
     const [formData, setFormData] = useState({
-        title: "",
-        type: "",
+        title: initialTitle ?? "",
+        type: initialTitle ? "anime" : "",
         rating: 0,
         image: "",
         comments: "",
@@ -113,59 +115,7 @@ export function AddEntryForm({ onSave, onCancel, userId }: AddEntryFormProps) {
 
             if (entryError) throw entryError
 
-            // Insert genres
-            // for (const genreName of formData.genres) {
-            //     // First, ensure genre exists
-            //     const { data: genreData, error: genreError } = await supabase
-            //         .from("genres")
-            //         .upsert({ name: genreName }, { onConflict: "name" })
-            //         .select()
-            //         .single()
-
-            //     if (genreError) throw genreError
-
-            //     // Link entry to genre
-            //     const { error: linkError } = await supabase.from("entry_genres").insert({
-            //         entry_id: entryData.id,
-            //         genre_id: genreData.id,
-            //     })
-
-            //     if (linkError) throw linkError
-            // }
-            // Insert genres
-            for (const genreName of formData.genres) {
-                let genreId: string | null = null
-
-                // First, try to find the existing genre
-                const { data: existingGenre } = await supabase
-                    .from("genres")
-                    .select("id")
-                    .eq("name", genreName)
-                    .single()
-
-                if (existingGenre) {
-                    // Genre already exists, use its ID
-                    genreId = existingGenre.id
-                } else {
-                    // Genre doesn't exist, create it
-                    const { data: newGenre, error: genreError } = await supabase
-                        .from("genres")
-                        .insert({ name: genreName })
-                        .select("id")
-                        .single()
-
-                    if (genreError) throw genreError
-                    genreId = newGenre.id
-                }
-
-                // Link entry to genre
-                const { error: linkError } = await supabase.from("entry_genres").insert({
-                    entry_id: entryData.id,
-                    genre_id: genreId,
-                })
-
-                if (linkError) throw linkError
-            }
+            await linkGenres(entryData.id, formData.genres)
 
             // Insert related entries
             for (const relatedTitle of formData.relatedEntries) {
