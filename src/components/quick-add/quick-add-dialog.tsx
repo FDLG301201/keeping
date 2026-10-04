@@ -5,6 +5,7 @@ import { Loader2, RotateCcw, Sparkles, X } from "lucide-react"
 import { ConfirmCard } from "./confirm-card"
 import { IdentifyStep } from "./identify-step"
 import { findDuplicate } from "@/lib/services/entries"
+import { translateToSpanish, warmUpTranslator } from "@/lib/services/translate"
 import { getFranchise } from "@/lib/services/anime/search"
 import type { AnimeCandidate, AnimeFranchise } from "@/lib/services/anime/types"
 
@@ -34,14 +35,20 @@ export function QuickAddDialog({ userId, onClose, onSaved, onManual }: QuickAddD
   useEffect(() => () => inFlight.current?.abort(), [])
 
   const pick = async (candidate: AnimeCandidate) => {
+    // Must run before the first await, while the click still counts as a user gesture.
+    warmUpTranslator()
     inFlight.current?.abort()
     const controller = new AbortController()
     inFlight.current = controller
     setStep({ kind: "loading" })
     try {
       const franchise = await getFranchise(candidate, controller.signal)
-      const isDuplicate = await findDuplicate(userId, "anime", franchise.title)
-      if (!controller.signal.aborted) setStep({ kind: "confirm", candidate, franchise, isDuplicate })
+      const [isDuplicate, description] = await Promise.all([
+        findDuplicate(userId, "anime", franchise.title),
+        translateToSpanish(franchise.description, controller.signal),
+      ])
+      if (!controller.signal.aborted)
+        setStep({ kind: "confirm", candidate, franchise: { ...franchise, description }, isDuplicate })
     } catch (error) {
       if (controller.signal.aborted) return
       console.error("Error loading franchise:", error)
