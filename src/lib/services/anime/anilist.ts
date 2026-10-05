@@ -20,6 +20,7 @@ interface MediaEdge {
 export interface AniListMedia {
   id: number
   title: { romaji: string | null; english: string | null }
+  synonyms: string[]
   format: string | null
   status: string | null
   episodes: number | null
@@ -35,6 +36,7 @@ export interface AniListMedia {
 const MEDIA_FIELDS = `
   id
   title { romaji english }
+  synonyms
   format
   status
   episodes
@@ -73,6 +75,7 @@ export function toCandidate(m: AniListMedia): AnimeCandidate {
     coverUrl: m.coverImage.extraLarge ?? m.coverImage.large,
     year: m.seasonYear ?? m.startDate.year,
     format: m.format,
+    altTitles: [m.title.romaji, m.title.english, ...m.synonyms].filter((t): t is string => !!t),
   }
 }
 

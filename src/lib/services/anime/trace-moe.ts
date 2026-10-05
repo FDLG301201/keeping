@@ -1,9 +1,11 @@
 import { getMediaByIds, toCandidate } from "./anilist"
 import { HttpError } from "./http"
+import { normalizeImage } from "./image"
 import type { AnimeCandidate } from "./types"
 
 const ENDPOINT = "https://api.trace.moe/search?cutBorders"
-const MAX_WIDTH = 640
+// trace.moe gains nothing from larger images; smaller uploads are faster.
+const MAX_SIDE = 640
 
 interface TraceResult {
   anilist: number
@@ -17,20 +19,6 @@ export class TraceQuotaError extends Error {
   }
 }
 
-/** Downscales to MAX_WIDTH as JPEG; trace.moe gains nothing from larger images. */
-async function shrink(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, MAX_WIDTH / bitmap.width)
-  const canvas = document.createElement("canvas")
-  canvas.width = Math.round(bitmap.width * scale)
-  canvas.height = Math.round(bitmap.height * scale)
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-  bitmap.close()
-  return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("No se pudo procesar la imagen"))), "image/jpeg", 0.85),
-  )
-}
-
 const firstEpisode = (ep: TraceResult["episode"]): number | undefined => {
   const n = Array.isArray(ep) ? ep[0] : typeof ep === "string" ? Number.parseInt(ep) : ep
   return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : undefined
@@ -41,7 +29,7 @@ export async function identifyScene(file: File, signal?: AbortSignal): Promise<A
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "image/jpeg" },
-    body: await shrink(file),
+    body: await normalizeImage(file, MAX_SIDE, 0.85),
     signal,
   })
   if (res.status === 402 || res.status === 429) throw new TraceQuotaError()

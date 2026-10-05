@@ -8,6 +8,8 @@ export interface AnimeCandidate {
   coverUrl: string | null
   year: number | null
   format: string | null
+  /** Other known titles (romaji, English, synonyms), used to match OCR text. */
+  altTitles?: string[]
   /** trace.moe only: 0–1 match confidence. */
   similarity?: number
   /** trace.moe only: episode the scene belongs to. */

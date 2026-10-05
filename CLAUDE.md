@@ -82,6 +82,8 @@ Data rules that are easy to break:
 - **One entry per franchise.** AniList treats each season as its own media; `resolveSeasonChain` walks PREQUEL links back to the first season, then SEQUEL forward, counting only `TV`/`TV_SHORT` and skipping unreleased seasons (unless picked). Movies/OVAs/specials never count as seasons. Jikan results are always 1 season.
 - **`episodes` is per season** (episodes of `current_season`), not the franchise total.
 - Title/cover/synopsis come from the first season. Genres are translated via the dictionary in `genres.ts` (unknown ones kept as-is). The synopsis is translated by `src/lib/services/translate.ts`: browser `Translator` API → MyMemory (500-char limit, errors arrive as HTTP 200) → original English. It never throws, and `warmUpTranslator()` must run before the first `await` of a click handler, because Chrome needs a user gesture to download the model.
+- **OCR never guesses the title.** `readTitleLines` returns all confident lines (sparse-text mode); `searchFromOcrLines` searches each on AniList and keeps the first whose words match a result's titles (`title-match.ts`). Photos go through `normalizeImage` first, which applies EXIF orientation: phone photos are often stored sideways, and the OCR reads them rotated otherwise.
+- trace.moe matches under 80% similarity are treated as "not recognized". Recently aired anime are often not indexed yet.
 - Duplicates are detected by case-insensitive title match among the user's anime entries (no external ID column).
 
 ### UI Conventions
