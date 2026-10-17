@@ -3,32 +3,14 @@
 import NextImage from "next/image"
 import React from "react"
 import { useState, useEffect, useCallback } from "react"
-import { Star, Plus, Search, LogOut, User, Filter, Eye, Clock, Pause, X, Play, ChevronDown, Sparkles } from "lucide-react"
+import { Star, Plus, Search, LogOut, User, Filter, Eye, Clock, Pause, X, Play, ChevronDown, Sparkles, Send } from "lucide-react"
 import { AddEntryForm } from "@/components/forms/add-entry-form"
 import { QuickAddDialog } from "@/components/quick-add/quick-add-dialog"
+import { RecommendDialog } from "@/components/recommend/recommend-dialog"
 import { createClient } from "@/lib/supabase/client"
-import { UserProfile } from "@/lib/types"
+import type { Entry, UserProfile } from "@/lib/types"
 import { useRouter } from "next/navigation"
 
-interface EntryType {
-  id: number
-  title: string
-  type: string
-  rating: number
-  image_url: string
-  comments: string
-  date_watched: string
-  description: string
-  status: string
-  seasons: number
-  current_season: number
-  episodes: number
-  current_episode: number
-  genres: string[]
-  related_entries: string[]
-  user_id: string
-  created_at: string
-}
 
 // const typeColors = {
 //   Anime: "bg-pink-500",
@@ -87,10 +69,11 @@ export default function EntertainmentDirectory() {
   const [user, setUser] = useState<UserProfile>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showQuickAdd, setShowQuickAdd] = useState(false)
+  const [showRecommend, setShowRecommend] = useState(false)
   const [manualTitle, setManualTitle] = useState<string | undefined>(undefined)
-  const [selectedEntry, setSelectedEntry] = useState<EntryType | null>(null)
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null)
   const [showFilters, setShowFilters] = useState(false)
-  const [entries, setEntries] = useState<EntryType[]>([])
+  const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -341,6 +324,8 @@ export default function EntertainmentDirectory() {
         />
       )}
 
+      {showRecommend && <RecommendDialog entries={entries} onClose={() => setShowRecommend(false)} />}
+
       {/* Header */}
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-3 sm:py-4">
@@ -361,6 +346,14 @@ export default function EntertainmentDirectory() {
                 <User className="w-4 h-4" />
                 <span className="max-w-[160px] truncate">{user?.email}</span>
               </div>
+              <button
+                className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
+                onClick={() => setShowRecommend(true)}
+                title="Recomendar a alguien"
+              >
+                <Send className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Recomendar</span>
+              </button>
               <button
                 className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium rounded-md hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
                 onClick={() => setShowQuickAdd(true)}

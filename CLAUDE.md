@@ -86,6 +86,11 @@ Data rules that are easy to break:
 - trace.moe matches under 80% similarity are treated as "not recognized". Recently aired anime are often not indexed yet.
 - Duplicates are detected by case-insensitive title match among the user's anime entries (no external ID column).
 
+### Recommend ("Recomendar")
+Pick a type, genres (match **any**) and a minimum rating, swipe the matching entries Tinder-style, then share the accepted ones outside the app (no DB tables, no recipient accounts). It filters the `entries` the dashboard already loaded, so there are no extra queries. `not_started` and `dropped` entries are never recommended. Logic lives in `src/lib/services/recommend/` (pure `filter.ts` / `share-text.ts`; `share-image.ts` draws a poster on `<canvas>`; `share.ts` wraps the browser share/clipboard APIs). UI is in `src/components/recommend/`; the swipe gesture is the dependency-free `use-swipe.ts` hook.
+- Share buttons appear by **capability**, not device type: `navigator.canShare({ files })` → native share with the image. Copy image needs PNG (`canvasToBlob(..., "image/png")`); share/download use JPEG.
+- Cover hosts (AniList, MAL, Supabase storage) all send CORS headers, so covers can be drawn and exported. A cover that fails to load becomes a colored tile instead of breaking the poster.
+
 ### UI Conventions
 
 **Continuation info (seasons/episodes)** is only shown for `series` and `anime` types, and only when `status ∈ {in_progress, paused, dropped}`. It is intentionally hidden for `not_started` (nothing to track yet) and `completed` (no ongoing progress). The mini season indicator on cards (`T2/4`) is further restricted to `in_progress` and `paused` only.
@@ -100,7 +105,7 @@ Data rules that are easy to break:
 | `src/components/forms/add-entry-form.tsx` | Add/edit entry form — image upload, genre tagging, related-entry linking |
 | `proxy.ts` | Route protection and Supabase session validation (Next.js 16 proxy, formerly middleware.ts) |
 | `scripts/apply-email-templates.mjs` | Pushes `src/emails/*.html` auth email templates to Supabase |
-| `src/lib/types.ts` | `EntryType`, `EntryStatus`, `UserProfile` TypeScript types |
+| `src/lib/types.ts` | `Entry` (a dashboard row with genre/relation names flattened; `id` is a uuid string), `UserProfile` |
 | `docs/supabase-schema.md` | Full DB schema, RLS policies, FK names, and reference queries |
 
 ### Environment Variables
